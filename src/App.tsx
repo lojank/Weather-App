@@ -6,12 +6,16 @@ import WeatherLocation from "./components/WeatherLocation";
 import Error from "./components/Error";
 
 function App() {
+  // Define your API key from OpenWeatherMap API
+  const YOUR_API_KEY = "";
+
+  // Define state variables for latitude and longitude
   const [lat, setLat] = useState<number>();
   const [long, setLong] = useState<number>();
 
+  // Define the structure of the weather data using an interface
   interface WeatherData {
     name: string;
-    cod: number;
     sys: {
       country: string;
     };
@@ -30,9 +34,9 @@ function App() {
     }[];
   }
 
+  // Initialize state for weather data and error messages
   const [data, setData] = useState<WeatherData>({
     name: "",
-    cod: 0,
     sys: {
       country: "",
     },
@@ -53,8 +57,9 @@ function App() {
     ],
   });
 
-  const [errorMsg, setErrorMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState<string>("");
 
+  // fetch the user's coordinates
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -77,10 +82,11 @@ function App() {
     }
   }, []);
 
+  // Use another useEffect to fetch weather data based on latitude and longitude
   useEffect(() => {
     if (lat && long) {
       fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&appid=3289764f272a524f9cf22f194959aa13`
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&appid=${YOUR_API_KEY}`
       )
         .then((res) => res.json())
         .then((data) => {
@@ -92,10 +98,12 @@ function App() {
     }
   }, [lat, long]);
 
-  function kelvin_to_celcius(k: number): number {
+  // Function to convert temperature from Kelvin to Celsius
+  function kelvin_to_celsius(k: number): number {
     return Math.round(k - 273.15);
   }
 
+  // Render different components based on error messages and weather data
   return errorMsg !== "" || data.name === "" ? (
     <div className="weather-body">
       <Error data={data} errorMsg={errorMsg} />
@@ -103,8 +111,8 @@ function App() {
   ) : (
     <div className="weather-body">
       <WeatherLocation data={data} />
-      <CurrentWeather data={data} convert_temp={kelvin_to_celcius} />
-      <WeatherInfo data={data} convert_temp={kelvin_to_celcius} />
+      <CurrentWeather data={data} convert_temp={kelvin_to_celsius} />
+      <WeatherInfo data={data} convert_temp={kelvin_to_celsius} />
     </div>
   );
 }

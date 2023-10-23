@@ -2,12 +2,14 @@ import "./WeatherLocation.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 
+// refresh page when reload is clicked
 function refresh(): void {
   window.location.reload();
 }
-
+// new Date object to display current time
 const date = new Date();
 
+// displays location and time
 function WeatherLocation(props: any) {
   return (
     <div>

@@ -1,5 +1,6 @@
 import "./WeatherInfo.css";
 
+// displays additional weather information
 function WeatherInfo(props: any) {
   return (
     <div className="info-main-div">
