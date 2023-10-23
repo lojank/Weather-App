@@ -1,0 +1,15 @@
+.weather-location-div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.weather-location {
+  font-size: 2em;
+  padding-bottom: 10px;
+}
+
+.weather-time {
+  font-size: 1.5em;
+}

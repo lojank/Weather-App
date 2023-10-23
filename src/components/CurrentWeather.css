@@ -1,0 +1,28 @@
+.weather-main {
+  display: flex;
+  padding-bottom: 50px;
+}
+
+.weather-icon {
+  height: 250px;
+  width: 250px;
+}
+
+.weather-icon-div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.weather-description {
+  margin-top: -17px;
+  font-size: 2em;
+}
+
+.weather-main-temp-div {
+  margin: auto 0px;
+}
+
+.weather-main-temp {
+  font-size: 5em;
+}
