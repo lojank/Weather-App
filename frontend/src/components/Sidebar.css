@@ -1,0 +1,155 @@
+/* Sidebar container */
+.sidebar {
+  height: 100%;
+  width: 320px; /* Increased sidebar width */
+  position: fixed;
+  top: 0;
+  left: -320px; /* Adjust based on new width */
+  padding-top: 20px;
+  transition: 0.5s;
+  z-index: 1000;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+  font-family: "Lato", sans-serif;
+}
+
+/* When sidebar is open */
+.sidebar.open {
+  left: 0;
+}
+
+/* Top row for hamburger and location icons */
+.top-row-icons {
+  border: 1px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  position: relative; 
+  transition: color 0.3s ease; /* Ensure transition is applied to the whole row */
+}
+
+/* Location arrow icon */
+.location-icon {
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.location-icon:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Hamburger button */
+.hamburger-btn {
+  position: fixed;
+  top: 27px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 1001;
+  transition: left 0.5s;
+}
+
+.hamburger-btn .line {
+  width: 35px;
+  height: 4px;
+  background-color: white;
+  margin: 6px 0;
+  transition: background-color 0.3s ease;
+}
+
+.hamburger-btn:hover .line {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+/* Tooltip styling */
+.tooltip {
+  visibility: visible;
+  color: white;
+  text-align: center;
+  border-radius: 6px;
+  padding: 2px;
+  position: absolute;
+  top: 15px;
+  left: 10%;
+  z-index: 1001;
+  width: 190px;
+  font-size: 0.9em;
+}
+
+/* Search container */
+.search-container {
+  border-top: 1px solid white;
+  text-align: center;
+  margin: 20px 0;
+  padding-top: 10px;
+}
+
+.top-row-icons:hover .location-icon,
+.top-row-icons:hover .tooltip {
+  color: rgba(255, 255, 255, 0.7); /* Change color on hover */
+}
+
+.search-label {
+  font-size: 1.2em;
+  color: white;
+}
+
+.search-inputs {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 5px 0px 5px;
+}
+
+.search-inputs input {
+  padding: 10px;
+  border: 1px solid white;
+  border-radius: 5px;
+  color: white; 
+  background-color: rgba(255, 255, 255, 0.1);
+  width: 100px;
+}
+
+.search-button {
+  cursor: pointer;
+  padding: 10px;
+}
+
+/* Search icon */
+.search-icon {
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+/* Only the search icon lights up when hovered */
+.search-icon:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+
+/* Recent searches header */
+.recent-searches-header {
+  color: white;
+  font-size: 1.2em;
+  text-align: center;
+  margin: 15px 0;
+}
+
+/* Sidebar button styling */
+.sidebar button {
+  display: block;
+  padding: 15px 20px;
+  color: white;
+  background-color: transparent;
+  border: none;
+  text-align: left;
+  width: 100%;
+  font-size: 1.1em;
+  letter-spacing: 1px;
+  transition: background-color 0.3s ease;
+}
