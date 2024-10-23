@@ -7,38 +7,51 @@ interface SidebarProps {
   getCurrentLocationWeather: () => void;
   searchWeather: (city: string, country: string) => void;
   recentSearches: { city: string; country: string }[];
-  isNight: boolean; // Accept the isNight prop
+  setRecentSearches: React.Dispatch<React.SetStateAction<{ city: string; country: string }[]>>;
+  isNight: boolean; 
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
   getCurrentLocationWeather,
   searchWeather,
   recentSearches,
-  isNight, // Destructure isNight
+  isNight, 
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [searchCity, setSearchCity] = useState<string>("");
   const [searchCountry, setSearchCountry] = useState<string>("");
 
-  const handleSearch = () => {
-    const newSearch = { city: searchCity, country: searchCountry };
+  const handleSearch = (city: string, country: string) => {
+    const newSearch = { city, country };
     const isDuplicate = recentSearches.some(
       (location) => location.city === newSearch.city && location.country === newSearch.country
     );
-
     if (!isDuplicate && newSearch.city && newSearch.country) {
-      const updatedSearches = [...recentSearches, newSearch];
-      const limitedSearches = updatedSearches.slice(-8);
-
-      // Assuming a setRecentSearches function exists to update recent searches
-      // setRecentSearches(limitedSearches);
+      // Call the backend to store the search in the database
+      fetch("http://127.0.0.1:5000/update-search-history", {
+        credentials: "include",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newSearch),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.message) {
+            console.log(data.message);
+          }
+        })
+        .catch((error) => {
+          console.error("Error updating search history:", error);
+        });
     }
-
-    searchWeather(searchCity, searchCountry);
+  
+    searchWeather(city, country);
     setSearchCity("");
     setSearchCountry("");
   };
-
+  
   return (
     <div>
       {/* Hamburger button */}
@@ -46,7 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         className="hamburger-btn"
         onClick={() => setIsOpen(!isOpen)}
         style={{
-          left: isOpen ? "260px" : "25px", // Adjust left positioning based on sidebar width
+          left: isOpen ? "260px" : "25px", 
         }}
       >
         <div className="line"></div>
@@ -58,7 +71,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div
         className={`sidebar ${isOpen ? "open" : ""}`}
         style={{
-          backgroundColor: isNight ? "rgb(11, 0, 28)" : "rgb(95, 150, 192)", // Conditional background color
+          backgroundColor: isNight ? "rgb(11, 0, 28)" : "rgb(95, 150, 192)",
         }}
       >
         {/* Location arrow and hamburger button on the same row */}
@@ -83,9 +96,10 @@ const Sidebar: React.FC<SidebarProps> = ({
               value={searchCountry}
               onChange={(e) => setSearchCountry(e.target.value)}
             />
-            <div className="search-button" onClick={handleSearch}>
+            <div className="search-button" onClick={() => handleSearch(searchCity, searchCountry)}>
               <FontAwesomeIcon icon={faMagnifyingGlass} className="search-icon" />
             </div>
+
           </div>
         </div>
 
@@ -93,14 +107,19 @@ const Sidebar: React.FC<SidebarProps> = ({
         <div className="recent-searches-header">Recent Searches</div>
 
         {/* Display recent searches */}
-        {recentSearches.map((location, index) => (
-          <button
-            key={index}
-            onClick={() => searchWeather(location.city, location.country)}
-          >
-            {location.city}, {location.country}
-          </button>
-        ))}
+        {recentSearches && recentSearches.length > 0 ? (
+    recentSearches.map((location, index) => (
+      <button
+        key={index}
+        onClick={() => handleSearch(location.city, location.country)} 
+      >
+        {location.city}, {location.country}
+      </button>
+    ))
+) : (
+  <p>No recent searches available</p>
+)}
+
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import "./CurrentWeather.css";
 
 function CurrentWeather(props: any) {
   // function that capitalizes a sentence 
-  // used for capitalizing descrition of weather from OpenWeather API
+  // used for capitalizing description of weather from OpenWeather API
   function capitalize(sentence: string): string {
     for (let i = 0; i < sentence.length; i++) {
       if (i === 0 || sentence[i - 1] === " ") {

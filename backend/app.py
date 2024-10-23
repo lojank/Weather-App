@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, session
+from flask import Flask, jsonify, request, make_response
 from flask_cors import CORS
 import requests
 import pycountry
@@ -6,13 +6,9 @@ import sqlite3
 import uuid
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key"  # Required for session management
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
-# Allow CORS for specific origins
-CORS(app, resources={r"/weather": {"origins": "http://localhost:3000"}})
-
-# OpenWeatherMap API key
-YOUR_API_KEY = ""
+YOUR_API_KEY = "";
 
 # Connect to SQLite database
 def get_db_connection():
@@ -33,12 +29,10 @@ def get_weather():
     lon = request.args.get('lon')
     city = request.args.get('city')
     country = request.args.get('country')
+    user_uuid = request.args.get('user_uuid')  # Get UUID from query params
 
-    # Generate a unique user ID if it doesn't exist
-    if 'user_uuid' not in session:
-        session['user_uuid'] = str(uuid.uuid4())
-
-    user_uuid = session['user_uuid']  # Get user's unique identifier
+    if not user_uuid:
+        return jsonify({"error": "No user UUID provided"}), 400
 
     # Fetch weather by coordinates (lat, lon)
     if lat and lon:
@@ -51,12 +45,11 @@ def get_weather():
     else:
         return jsonify({"error": "Either latitude/longitude or city/country is required"}), 400
 
-    # Make request to OpenWeatherMap API
     response = requests.get(url)
     if response.status_code == 200:
         weather_data = response.json()
 
-        # Only save the search if city and country are provided (i.e., not from lat/lon)
+        # Save the search if city and country are provided
         if city and country:
             conn = get_db_connection()
             conn.execute(
@@ -71,24 +64,58 @@ def get_weather():
         return jsonify({"error": "Failed to fetch weather data"}), response.status_code
 
 
-# Retrieve user search history
 @app.route('/search-history', methods=['GET'])
 def get_search_history():
-    if 'user_uuid' not in session:
-        return jsonify({"error": "No search history available"}), 404
+    user_uuid = request.args.get('user_uuid')  # Get UUID from query params
 
-    user_uuid = session['user_uuid']
+    if not user_uuid:
+        return jsonify({"error": "No user UUID provided"}), 400
+
     conn = get_db_connection()
     searches = conn.execute(
-        'SELECT city, country, timestamp FROM user_sessions WHERE uuid = ? ORDER BY timestamp DESC LIMIT 8',
+        '''
+        SELECT DISTINCT city, country, MAX(timestamp) as latest_timestamp 
+        FROM user_sessions 
+        WHERE uuid = ? 
+        GROUP BY city, country 
+        ORDER BY latest_timestamp DESC 
+        LIMIT 8
+        ''',
         (user_uuid,)
     ).fetchall()
     conn.close()
 
-    search_list = [{"city": search["city"], "country": search["country"], "timestamp": search["timestamp"]}
-                   for search in searches]
+    search_list = [{"city": search["city"], "country": search["country"]} for search in searches]
 
     return jsonify({"searches": search_list})
+
+
+@app.route('/update-search-history', methods=['POST'])
+def update_search_history():
+    user_uuid = request.args.get('user_uuid')  # Get UUID from query params
+    if not user_uuid:
+        return jsonify({"error": "No user UUID provided"}), 400
+
+    new_search = request.json
+    city = new_search.get('city')
+    country = new_search.get('country')
+
+    # Save the search to the database
+    conn = get_db_connection()
+    conn.execute(
+        'INSERT INTO user_sessions (uuid, city, country) VALUES (?, ?, ?)',
+        (user_uuid, city, country)
+    )
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Search history updated successfully"}), 200
+
+# Generate UUID for new users and return it to the frontend
+@app.route('/get-uuid', methods=['GET'])
+def get_uuid():
+    user_uuid = str(uuid.uuid4())
+    return jsonify({"uuid": user_uuid})
 
 
 if __name__ == '__main__':

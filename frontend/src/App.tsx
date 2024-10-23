@@ -4,12 +4,12 @@ import CurrentWeather from "./components/CurrentWeather";
 import WeatherInfo from "./components/WeatherInfo";
 import WeatherLocation from "./components/WeatherLocation";
 import Error from "./components/Error";
-import Sidebar from "./components/Sidebar"; // Import Sidebar
+import Sidebar from "./components/Sidebar";
 
 function App() {
   const [lat, setLat] = useState<number>();
   const [long, setLong] = useState<number>();
-  const [forceLocationUpdate, setForceLocationUpdate] = useState<number>(0); // Force update
+  const [forceLocationUpdate, setForceLocationUpdate] = useState<number>(0);
 
   interface WeatherData {
     name: string;
@@ -31,7 +31,7 @@ function App() {
     }[];
   }
 
-  const [data, setData] = useState<WeatherData | null>(null); // Start with null
+  const [data, setData] = useState<WeatherData | null>(null);
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [isNight, setIsNight] = useState<boolean>(false);
   const [recentSearches, setRecentSearches] = useState<{ city: string; country: string }[]>([]);
@@ -43,7 +43,7 @@ function App() {
         function (position) {
           setLat(position.coords.latitude);
           setLong(position.coords.longitude);
-          setForceLocationUpdate((prev) => prev + 1); // Trigger location update
+          setForceLocationUpdate((prev) => prev + 1);
         },
         function (error) {
           setErrorMsg("Error getting location: " + error.message);
@@ -55,61 +55,98 @@ function App() {
   };
 
   const searchWeather = (city: string, country: string) => {
-    fetch(`http://127.0.0.1:5000/weather?city=${city}&country=${country}`)
-      .then((res) => {
-        if (!res.ok) {
-          alert("Failed to fetch weather data");
-          return null;
-        }
-        return res.json();
-      })
+    const user_uuid = localStorage.getItem("user_uuid");
+  
+    fetch(`http://127.0.0.1:5000/weather?city=${city}&country=${country}&user_uuid=${user_uuid}`, {
+      method: "GET",
+    })
+      .then((res) => res.json())
       .then((data) => {
-        if (data) {
+        if (data.error) {
+          setErrorMsg(data.error); 
+          setData(null);
+        } else {
           setData(data);
-
-          const newSearchEntry = { city, country };
+          setErrorMsg("");  
           setRecentSearches((prev) => {
+            const newSearchEntry = { city, country };
             const updatedSearches = prev.filter(
               (location) => location.city !== city || location.country !== country
             );
             updatedSearches.unshift(newSearchEntry);
-            return updatedSearches.slice(0, 8);
+            return updatedSearches.slice(-8);
           });
         }
       })
       .catch((error) => {
-        alert("Error fetching weather data: " + error.message);
-        console.error("Error fetching data:", error);
+        setErrorMsg("Error fetching weather: " + error.message); 
+        console.error("Error fetching weather:", error);
       });
   };
 
+  const getSearchHistory = () => {
+    const user_uuid = localStorage.getItem("user_uuid");
+
+    fetch(`http://127.0.0.1:5000/search-history?user_uuid=${user_uuid}`, {
+      method: "GET",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setRecentSearches(data.searches);
+      })
+      .catch((error) => {
+        console.error("Error fetching search history:", error);
+      });
+  };
+
+  const getUUID = () => {
+    const storedUUID = localStorage.getItem("user_uuid");
+    if (!storedUUID) {
+      fetch("http://127.0.0.1:5000/get-uuid", {
+        method: "GET",
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          localStorage.setItem("user_uuid", data.uuid);
+        })
+        .catch((error) => {
+          console.error("Error getting UUID:", error);
+        });
+    }
+  };
+
   useEffect(() => {
+    getUUID(); 
+    getSearchHistory();
     getCurrentLocationWeather();
+    
     const currentHour = new Date().getHours();
     setIsNight(currentHour >= 20 || currentHour < 6);
   }, []);
 
   useEffect(() => {
     if (lat && long) {
-      fetch(`http://127.0.0.1:5000/weather?lat=${lat}&lon=${long}`)
-        .then((res) => {
-          if (!res.ok) {
-            alert("Failed to fetch weather data");
-            return null;
-          }
-          return res.json();
-        })
+      const user_uuid = localStorage.getItem("user_uuid");
+  
+      fetch(`http://127.0.0.1:5000/weather?lat=${lat}&lon=${long}&user_uuid=${user_uuid}`, {
+        method: "GET",
+      })
+        .then((res) => res.json())
         .then((data) => {
-          if (data) {
+          if (data.error) {
+            setErrorMsg(data.error); 
+            setData(null);
+          } else {
             setData(data);
+            setErrorMsg(""); 
           }
         })
         .catch((error) => {
-          alert("Error fetching weather data: " + error.message);
+          setErrorMsg("Error fetching weather data: " + error.message); 
           console.error("Error fetching data:", error);
         });
     }
-  }, [lat, long, forceLocationUpdate]); // Refetch whenever location changes or forceLocationUpdate triggers
+  }, [lat, long, forceLocationUpdate]);
 
   function kelvin_to_celsius(k: number): number {
     return Math.round(k - 273.15);
@@ -124,6 +161,7 @@ function App() {
         searchWeather={searchWeather}
         recentSearches={recentSearches}
         isNight={isNight}
+        setRecentSearches={setRecentSearches}
       />
 
       {errorMsg !== "" || !data ? (
