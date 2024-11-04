@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})  # Allow CORS for specified origin
 
-YOUR_API_KEY = ""  # OpenWeather API key
+YOUR_API_KEY = "3780d23910d077915dcd2f94100efb7d"  # OpenWeather API key
 
 # Establishes a connection to the SQLite database
 def get_db_connection():
