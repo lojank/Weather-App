@@ -117,7 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       </button>
     ))
 ) : (
-  <p>No recent searches available</p>
+  <p className="no-searches">No recent searches available</p>
 )}
 
       </div>

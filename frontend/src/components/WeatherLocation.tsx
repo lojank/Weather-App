@@ -1,8 +1,5 @@
 import "./WeatherLocation.css";
 
-// new Date object to display current time
-const date = new Date();
-
 // displays location and time
 function WeatherLocation(props: any) {
   return (
