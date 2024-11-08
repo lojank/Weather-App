@@ -51,7 +51,8 @@ A web application that provides weather information based on user input or curre
    npm start
    ```
 
-### API Endpoints
+## API Endpoints
+
 `/weather` **[GET]**
 
 Fetches weather data for the specified location by latitude/longitude or city/country.
