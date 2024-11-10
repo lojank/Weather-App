@@ -2,6 +2,8 @@
 
 A web application that provides weather information based on user input or current location. It utilizes OpenWeatherMap API to retrieve weather data and stores recent search history.
 
+![Weather Page](frontend/public/App_Screenshot.png)
+
 ## Features
 
 - **Search by Location:** Get weather updates by entering city and country.
